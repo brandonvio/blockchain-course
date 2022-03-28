@@ -1,0 +1,14 @@
+package main
+
+import (
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
+)
+
+func TestBlock_Hash(t *testing.T) {
+	Convey("block1 was created as expected", t, func() {
+		//block1 := bc.chain[1]
+		//So(block1.nonce, ShouldEqual, nonce1)
+		//So(block1.timestamp, ShouldEqual, blockTimestamp)
+	})
+}
