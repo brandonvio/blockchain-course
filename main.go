@@ -3,6 +3,7 @@ package main
 import (
 	"blockchain/block"
 	"blockchain/globals"
+	"blockchain/wallet"
 	"context"
 	"fmt"
 	"log"
@@ -19,13 +20,20 @@ func main() {
 	app := fx.New(
 		fx.Provide(globals.NewGlobals),
 		fx.Provide(block.NewBlockchain),
-		fx.Invoke(RunBlockChain),
+		fx.Invoke(CreateWallet),
 	)
 	startCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := app.Start(startCtx); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CreateWallet() {
+	w := wallet.NewWallet()
+	fmt.Println(w.PrivateKeyStr())
+	fmt.Println(w.PublicKeyStr())
+	fmt.Println(w.BlockchainAddress())
 }
 
 func RunBlockChain(bc *block.Blockchain) {
