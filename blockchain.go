@@ -1,9 +1,13 @@
 package main
 
 import (
+	types "blockchain/blockchaintypes"
+
 	"fmt"
 	"strings"
 )
+
+const DIFFICULTY_LEVEL = 3
 
 type Blockchain struct {
 	globals         IGlobalLib
@@ -28,9 +32,11 @@ func (bc *Blockchain) Print() {
 	fmt.Printf("%s\n", strings.Repeat("*", 39))
 }
 
-func (bc *Blockchain) CreateBlock(nonce int) *Block {
+func (bc *Blockchain) CreateBlock() *Block {
 	lb := bc.LastBlock()
-	b := NewBlock(nonce, lb.Hash(), bc.globals.NowUnixNano(), bc.transactionPool)
+	previousHash := lb.Hash()
+	nonce := bc.ProofOfWork()
+	b := NewBlock(nonce, previousHash, bc.globals.NowUnixNano(), bc.transactionPool)
 	bc.chain = append(bc.chain, b)
 	bc.transactionPool = []*Transaction{}
 	return b
@@ -44,4 +50,44 @@ func (bc *Blockchain) AddTransaction(sender string, recipient string, value floa
 	t := NewTransaction(sender, recipient, value)
 	bc.transactionPool = append(bc.transactionPool, t)
 	return t
+}
+
+func (bc *Blockchain) CopyTransactionPool() []*Transaction {
+	transactions := make([]*Transaction, 0)
+	for _, transaction := range bc.transactionPool {
+		transactions = append(transactions,
+			NewTransaction(
+				transaction.sendBlockchainAddress,
+				transaction.recipientBlockchainAddress,
+				transaction.value))
+	}
+	return transactions
+}
+
+func (bc *Blockchain) ValidProof(
+	nonce int,
+	previousHash types.Byte32,
+	transactions []*Transaction,
+	difficulty int) bool {
+
+	zeros := strings.Repeat("0", difficulty)
+	guessBlock := Block{
+		timestamp:    0,
+		nonce:        nonce,
+		previousHash: previousHash,
+		transactions: transactions,
+	}
+	guessHashStr := fmt.Sprintf("%x", guessBlock.Hash())
+	// fmt.Println(guessHashStr)
+	return guessHashStr[:difficulty] == zeros
+}
+
+func (bc *Blockchain) ProofOfWork() int {
+	transactions := bc.CopyTransactionPool()
+	previousHash := bc.LastBlock().Hash()
+	nonce := 0
+	for !bc.ValidProof(nonce, previousHash, transactions, DIFFICULTY_LEVEL) {
+		nonce += 1
+	}
+	return nonce
 }

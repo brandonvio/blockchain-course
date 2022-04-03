@@ -1,9 +1,11 @@
 package main
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
+	types "blockchain/blockchaintypes"
 	"testing"
 	"time"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGlobals_EmptyByte32(t *testing.T) {
@@ -11,7 +13,7 @@ func TestGlobals_EmptyByte32(t *testing.T) {
 	globals := NewGlobals()
 
 	Convey("block1 was created as expected", t, func() {
-		So(globals.EmptyByte32(), ShouldEqual, [32]byte{})
+		So(globals.EmptyByte32(), ShouldEqual, types.Byte32{})
 		So(globals.NowUnixNano(), ShouldAlmostEqual, time.Now().UnixNano())
 	})
 }

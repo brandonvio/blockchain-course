@@ -1,12 +1,12 @@
 package main
 
 import (
+	types "blockchain/blockchaintypes"
 	"blockchain/mock_main"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/smartystreets/goconvey/convey"
-	"math/rand"
-	"testing"
-	"time"
 )
 
 const BlockTimestamp int64 = 1648402331651366000
@@ -17,11 +17,8 @@ func TestBlockchain_CreateBlock(t *testing.T) {
 
 	// Mock GlobalLib
 	gl := mock_main.NewMockIGlobalLib(ctrl)
-	gl.EXPECT().EmptyByte32().AnyTimes().Return([32]byte{})
+	gl.EXPECT().EmptyByte32().AnyTimes().Return(types.Byte32{})
 	gl.EXPECT().NowUnixNano().AnyTimes().Return(BlockTimestamp)
-
-	rand.Seed(time.Now().UnixNano())
-	nonce1 := rand.Int()
 	bc := NewBlockchain(gl)
 
 	Convey("blockchain initialized with root block", t, func() {
@@ -37,12 +34,23 @@ func TestBlockchain_CreateBlock(t *testing.T) {
 			bc.AddTransaction("X", "Y", 395.2)
 			So(len(bc.transactionPool), ShouldEqual, 2)
 		})
+		Convey("copy transaction pool works", func() {
+			copiedTransactions := bc.CopyTransactionPool()
+			So(copiedTransactions, ShouldNotBeNil)
+			So(len(copiedTransactions), ShouldEqual, 2)
+		})
 		Convey("when block is created, transactions remove from bool added to block", func() {
-			b1 := bc.CreateBlock(nonce1)
+			b1 := bc.CreateBlock()
 			So(len(bc.transactionPool), ShouldEqual, 0) // 0
 			So(len(b1.transactions), ShouldEqual, 2)    // 2
-			So(b1.nonce, ShouldEqual, nonce1)
+			So(b1.nonce, ShouldEqual, 4814)
 			So(b1.timestamp, ShouldEqual, BlockTimestamp)
+		})
+		Convey("create another block", func() {
+			bc.AddTransaction("F", "L", 1000.3443)
+			bc.AddTransaction("G", "M", 2000.3232)
+			b2 := bc.CreateBlock()
+			So(b2.nonce, ShouldNotBeNil)
 		})
 	})
 	bc.Print()
@@ -52,7 +60,7 @@ func TestBlockchain_AddTransaction(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	gl := mock_main.NewMockIGlobalLib(ctrl)
-	gl.EXPECT().EmptyByte32().AnyTimes().Return([32]byte{})
+	gl.EXPECT().EmptyByte32().AnyTimes().Return(types.Byte32{})
 	gl.EXPECT().NowUnixNano().AnyTimes().Return(BlockTimestamp)
 
 	bc := NewBlockchain(gl)

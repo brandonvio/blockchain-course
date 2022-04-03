@@ -5,6 +5,8 @@
 package mock_main
 
 import (
+	"blockchain/blockchaintypes"
+
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,10 +36,10 @@ func (m *MockIGlobalLib) EXPECT() *MockIGlobalLibMockRecorder {
 }
 
 // EmptyByte32 mocks base method.
-func (m *MockIGlobalLib) EmptyByte32() [32]byte {
+func (m *MockIGlobalLib) EmptyByte32() blockchaintypes.Byte32 {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmptyByte32")
-	ret0, _ := ret[0].([32]byte)
+	ret0, _ := ret[0].(blockchaintypes.Byte32)
 	return ret0
 }
 

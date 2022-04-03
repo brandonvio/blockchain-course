@@ -5,16 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	types "blockchain/blockchaintypes"
 )
 
 type Block struct {
 	nonce        int
-	previousHash [32]byte
+	previousHash types.Byte32
 	timestamp    int64
 	transactions []*Transaction
 }
 
-func NewBlock(nonce int, previousHash [32]byte, timestamp int64, transactions []*Transaction) *Block {
+func NewBlock(nonce int, previousHash types.Byte32, timestamp int64, transactions []*Transaction) *Block {
 	return &Block{
 		nonce:        nonce,
 		previousHash: previousHash,
@@ -35,7 +37,7 @@ func (b *Block) Print() {
 	fmt.Printf("%s\n", strings.Repeat("-", 40))
 }
 
-func (b *Block) Hash() [32]byte {
+func (b *Block) Hash() types.Byte32 {
 	m, _ := json.Marshal(b)
 	return sha256.Sum256(m)
 }
@@ -44,7 +46,7 @@ func (b *Block) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Timestamp    int64          `json:"timestamp"`
 		Nonce        int            `json:"nonce"`
-		PreviousHash [32]byte       `json:"previous_hash"`
+		PreviousHash types.Byte32   `json:"previous_hash"`
 		Transactions []*Transaction `json:"transactions"`
 	}{
 		Timestamp:    b.timestamp,

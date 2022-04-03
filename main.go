@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"go.uber.org/fx"
 	"log"
 	"time"
+
+	"go.uber.org/fx"
 )
 
 func init() {
@@ -26,13 +27,13 @@ func main() {
 
 func RunBlockChain(bc *Blockchain) {
 	bc.AddTransaction("A", "B", 2.2)
-	bc.CreateBlock(5)
+	bc.CreateBlock()
 
 	bc.AddTransaction("C", "D", 3.1)
-	bc.CreateBlock(2)
+	bc.CreateBlock()
 
 	bc.AddTransaction("X", "Y", 3.1)
 	bc.AddTransaction("J", "K", 4.5)
-	bc.CreateBlock(2)
+	bc.CreateBlock()
 	bc.Print()
 }
