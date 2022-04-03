@@ -106,7 +106,7 @@ func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 	for _, transaction := range bc.transactionPool {
 		transactions = append(transactions,
 			NewTransaction(
-				transaction.sendBlockchainAddress,
+				transaction.senderBlockchainAddress,
 				transaction.recipientBlockchainAddress,
 				transaction.value))
 	}
@@ -156,7 +156,7 @@ func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
 				totalAmount += value
 			}
 
-			if t.sendBlockchainAddress == blockchainAddress {
+			if t.senderBlockchainAddress == blockchainAddress {
 				totalAmount -= value
 			}
 		}

@@ -47,7 +47,9 @@ func TestBlockchain_CreateBlock(t *testing.T) {
 			t1Signature,
 		)
 
-		fmt.Println("Added? ", isAdded)
+		So(isAdded, ShouldBeTrue)
+
+		bc.Mining()
 
 		// fmt.Printf("%v", t)
 		fmt.Printf("signature %s\n", t1.GenerateSignature())

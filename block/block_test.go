@@ -20,12 +20,12 @@ func TestBlock_Hash(t *testing.T) {
 	transactions := []*Transaction{
 		{
 			recipientBlockchainAddress: "A",
-			sendBlockchainAddress:      "B",
+			senderBlockchainAddress:    "B",
 			value:                      100.5,
 		},
 		{
 			recipientBlockchainAddress: "C",
-			sendBlockchainAddress:      "D",
+			senderBlockchainAddress:    "D",
 			value:                      200.5,
 		},
 	}
@@ -37,6 +37,6 @@ func TestBlock_Hash(t *testing.T) {
 		So(block.nonce, ShouldEqual, nonce)
 		So(block.timestamp, ShouldEqual, timestamp)
 		So(block.previousHash, ShouldEqual, previousHash)
-		So(fmt.Sprintf("%x", block.Hash()), ShouldEqual, "d529bb4e0e2cbb8f66509bd827c2536a19a608911446129860ab38223fa698ed")
+		So(fmt.Sprintf("%x", block.Hash()), ShouldEqual, "1af20570d0504ac1322e3cad6f61b3cae60bc31c8131516a00882d50d2a5dfd9")
 	})
 }

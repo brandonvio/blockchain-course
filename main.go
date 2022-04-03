@@ -41,21 +41,21 @@ func CreateWallets(bc *block.Blockchain) {
 		walletA.PublicKey(),
 		walletA.BlockchainAddress(),
 		walletB.BlockchainAddress(),
-		1.3,
+		2.0,
 	)
+
+	t1signature := t1.GenerateSignature()
 
 	isAdded := bc.AddTransaction(
 		walletA.BlockchainAddress(),
 		walletB.BlockchainAddress(),
 		2.0,
 		walletA.PublicKey(),
-		t1.GenerateSignature(),
+		t1signature,
 	)
 
 	fmt.Println("Added? ", isAdded)
-
-	// fmt.Printf("%v", t)
-	fmt.Printf("signature %s\n", t1.GenerateSignature())
+	bc.Mining()
 	bc.Print()
 }
 
