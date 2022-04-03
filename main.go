@@ -1,7 +1,10 @@
 package main
 
 import (
+	"blockchain/block"
+	"blockchain/globals"
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -14,8 +17,8 @@ func init() {
 
 func main() {
 	app := fx.New(
-		fx.Provide(NewGlobals),
-		fx.Provide(NewBlockchain),
+		fx.Provide(globals.NewGlobals),
+		fx.Provide(block.NewBlockchain),
 		fx.Invoke(RunBlockChain),
 	)
 	startCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -25,15 +28,20 @@ func main() {
 	}
 }
 
-func RunBlockChain(bc *Blockchain) {
+func RunBlockChain(bc *block.Blockchain) {
 	bc.AddTransaction("A", "B", 2.2)
-	bc.CreateBlock()
+	bc.Mining()
 
-	bc.AddTransaction("C", "D", 3.1)
-	bc.CreateBlock()
+	bc.AddTransaction("C", "B", 3.1)
+	bc.Mining()
 
 	bc.AddTransaction("X", "Y", 3.1)
 	bc.AddTransaction("J", "K", 4.5)
-	bc.CreateBlock()
+	bc.AddTransaction("B", "K", 1.2)
+	bc.Mining()
 	bc.Print()
+
+	fmt.Printf("miner	%.2f\n", bc.CalculateTotalAmount("my_blockchain_address"))
+	fmt.Printf("A	%.2f\n", bc.CalculateTotalAmount("A"))
+	fmt.Printf("B	%.2f\n", bc.CalculateTotalAmount("B"))
 }
