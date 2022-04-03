@@ -3,6 +3,10 @@ package block
 import (
 	types "blockchain/blockchaintypes"
 	"blockchain/globals"
+	"blockchain/utils"
+	"crypto/ecdsa"
+	"crypto/sha256"
+	"encoding/json"
 	"log"
 
 	"fmt"
@@ -31,6 +35,10 @@ func NewBlockchain(globals globals.IGlobalLib) *Blockchain {
 	return bc
 }
 
+func (bc *Blockchain) SetBlockchainAddress(address string) {
+	bc.blockchainAddress = address
+}
+
 func (bc *Blockchain) Print() {
 	for i, block := range bc.chain {
 		fmt.Printf("%s Block %d %s\n", strings.Repeat("=", 15), i, strings.Repeat("=", 15))
@@ -54,10 +62,43 @@ func (bc *Blockchain) LastBlock() *Block {
 	return bc.chain[len(bc.chain)-1]
 }
 
-func (bc *Blockchain) AddTransaction(sender string, recipient string, value float32) *Transaction {
+func (bc *Blockchain) VerifyTransactionSignature(
+	senderPublicKey *ecdsa.PublicKey,
+	s *utils.Signature,
+	t *Transaction,
+) bool {
+	m, _ := json.Marshal(t)
+	h := sha256.Sum256([]byte(m))
+	return ecdsa.Verify(senderPublicKey, h[:], s.R, s.S)
+}
+
+func (bc *Blockchain) AddTransaction(
+	sender string,
+	recipient string,
+	value float32,
+	senderPublicKey *ecdsa.PublicKey,
+	s *utils.Signature) bool {
+
 	t := NewTransaction(sender, recipient, value)
-	bc.transactionPool = append(bc.transactionPool, t)
-	return t
+
+	if sender == MINING_SENDER {
+		bc.transactionPool = append(bc.transactionPool, t)
+		return true
+	}
+
+	if bc.VerifyTransactionSignature(senderPublicKey, s, t) {
+
+		// if bc.CalculateTotalAmount(sender) < value {
+		// 	log.Println("ERROR: not enough balance in wallet")
+		// 	return false
+		// }
+
+		bc.transactionPool = append(bc.transactionPool, t)
+		return true
+	} else {
+		log.Println("ERROR: Verify Transaction")
+		return false
+	}
 }
 
 func (bc *Blockchain) CopyTransactionPool() []*Transaction {
@@ -100,7 +141,7 @@ func (bc *Blockchain) ProofOfWork() int {
 }
 
 func (bc *Blockchain) Mining() bool {
-	bc.AddTransaction(MINING_SENDER, bc.blockchainAddress, MINING_REWARD)
+	bc.AddTransaction(MINING_SENDER, bc.blockchainAddress, MINING_REWARD, nil, nil)
 	bc.CreateBlock()
 	log.Println("action=mining status=success")
 	return true

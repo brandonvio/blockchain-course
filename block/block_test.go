@@ -8,6 +8,8 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+const BlockTimestamp int64 = 1648402331651366000
+
 func TestBlock_Hash(t *testing.T) {
 	// setup
 	globals := &globals.GlobalLib{}

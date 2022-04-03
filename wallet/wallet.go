@@ -48,7 +48,7 @@ func NewWallet() *Wallet {
 	// 6. Perform SHA-256 hash on the result of the previous SHA-256 hash.
 	h6 := sha256.New()
 	h6.Write(digest5)
-	digest6 := h5.Sum(nil)
+	digest6 := h6.Sum(nil)
 
 	// 7. Take the first 4 bytes of the second SHA-256 hash for checksum.
 	chsum := digest6[:4]
@@ -56,7 +56,7 @@ func NewWallet() *Wallet {
 	// 8. Add the 4 checksum bytes from 7 at the end of extended RIPEMD-160 hash from 4 (25 bytes).
 	dc8 := make([]byte, 25)
 	copy(dc8[:21], vd4[:])
-	copy(dc8[21:], chsum)
+	copy(dc8[21:], chsum[:])
 
 	// 9. Convert the result from a byte string into base58.
 	address := base58.Encode(dc8)
@@ -73,7 +73,7 @@ func (w *Wallet) PrivateKeyStr() string {
 }
 
 func (w *Wallet) PublicKey() *ecdsa.PublicKey {
-	return w.PublicKey()
+	return w.publicKey
 }
 
 func (w *Wallet) PublicKeyStr() string {
