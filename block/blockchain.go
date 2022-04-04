@@ -24,6 +24,7 @@ type Blockchain struct {
 	transactionPool   []*Transaction
 	chain             []*Block
 	blockchainAddress string
+	port              uint16
 }
 
 func NewBlockchain(globals globals.IGlobalLib) *Blockchain {
@@ -35,8 +36,20 @@ func NewBlockchain(globals globals.IGlobalLib) *Blockchain {
 	return bc
 }
 
+func (bc *Blockchain) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Blocks []*Block `json:"blocks"`
+	}{
+		Blocks: bc.chain,
+	})
+}
+
 func (bc *Blockchain) SetBlockchainAddress(address string) {
 	bc.blockchainAddress = address
+}
+
+func (bc *Blockchain) SetPort(port uint16) {
+	bc.port = port
 }
 
 func (bc *Blockchain) Print() {

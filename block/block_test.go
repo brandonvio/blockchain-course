@@ -37,6 +37,6 @@ func TestBlock_Hash(t *testing.T) {
 		So(block.nonce, ShouldEqual, nonce)
 		So(block.timestamp, ShouldEqual, timestamp)
 		So(block.previousHash, ShouldEqual, previousHash)
-		So(fmt.Sprintf("%x", block.Hash()), ShouldEqual, "1af20570d0504ac1322e3cad6f61b3cae60bc31c8131516a00882d50d2a5dfd9")
+		So(fmt.Sprintf("%x", block.Hash()), ShouldEqual, "1d1211bd8a6d46d981645464d1ee91b4b43673c8d42efa48e05bbcd2b21c2aca")
 	})
 }
