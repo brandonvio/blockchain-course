@@ -52,7 +52,8 @@ func (bc *Blockchain) CreateBlock() *Block {
 	lb := bc.LastBlock()
 	previousHash := lb.Hash()
 	nonce := bc.ProofOfWork()
-	b := NewBlock(nonce, previousHash, bc.globals.NowUnixNano(), bc.transactionPool)
+	timestamp := bc.globals.NowUnixNano()
+	b := NewBlock(nonce, previousHash, timestamp, bc.transactionPool)
 	bc.chain = append(bc.chain, b)
 	bc.transactionPool = []*Transaction{}
 	return b
@@ -141,10 +142,14 @@ func (bc *Blockchain) ProofOfWork() int {
 }
 
 func (bc *Blockchain) Mining() bool {
-	bc.AddTransaction(MINING_SENDER, bc.blockchainAddress, MINING_REWARD, nil, nil)
-	bc.CreateBlock()
-	log.Println("action=mining status=success")
-	return true
+	if len(bc.transactionPool) > 0 {
+		bc.AddTransaction(MINING_SENDER, bc.blockchainAddress, MINING_REWARD, nil, nil)
+		bc.CreateBlock()
+		log.Println("action=mining status=success")
+		return true
+	} else {
+		return false
+	}
 }
 
 func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
