@@ -2,10 +2,61 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>the blockchain</title>
+        <title>rythm cryptocurrency</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <link rel="stylesheet" href="https://bootswatch.com/5/darkly/bootstrap.css">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+        <script>
+            $(function (){
+                $.ajax({
+                    url: '/wallet',
+                    type: 'POST',
+                    success: function(response) {
+                        $('#public_key').val(response["public_key"])
+                        $('#private_key').val(response["private_key"])
+                        $('#blockchain_address').val(response["blockchain_address"])
+                        console.log("success")
+                    },
+                    error: function(error) {
+                        console.log(error)
+                    }
+                })
+
+                $("#send_money_button").click(function() {
+                    const confirmText = "Are you sure you want to send?"
+                    const confirmResult = confirm(confirmText)
+                    if (confirmResult !== true) {
+                        console.log("cancelled")
+                        return
+                    } 
+
+                    console.log("confirmed")
+                    const transactionData = {
+                        "sender_private_key": $("#private_key").val(),
+                        "sender_blockchain_address": $("#blockchain_address").val(),
+                        "sender_recipient_blockchain_address": $("#recipient_blockchain_address").val(),
+                        "sender_public_key": $("#public_key").val(),
+                        "sender_send_amount": $("#send_amount").val(),
+                    }
+                    console.log(transactionData)
+
+                    $.ajax({
+                        url: "/transaction",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(transactionData),
+                        success: function(response) {
+                            console.log("response:", response)
+                            console.log("send success")
+                        },
+                        error: function(response) {
+                            console.log("response:", response)
+                            console.log("send failure")
+                        }
+                    })
+                })
+            })
+        </script>
     </head>
     <body>
         <div class="container">
@@ -15,7 +66,7 @@
                 <h2>Wallet</h2>
                 <p>
                     <div id="wallet_amount">0</div>
-                    <button id="reload_wallet">Reload Wallet</button>
+                    <button class="btn btn-success" id="reload_wallet">Reload Wallet</button>
                 </p>
 
                 <p>
@@ -25,7 +76,7 @@
 
                 <p>
                     <label>Private Key</label><br>
-                    <textarea id="private_key" rows="1" cols="50"></textarea>
+                    <textarea id="private_key" rows="2" cols="50"></textarea>
                 </p>
 
                 <p>
@@ -43,7 +94,7 @@
 
                     <p>
                         <label>Amount:</label><br>
-                        <input id="send_amount" type="text"><button id="send_money_button">Send</button>
+                        <input id="send_amount" type="text"><button class="btn btn-success" id="send_money_button">Send</button>
                     </p>
                 </div>
             </div>

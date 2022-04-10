@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/btcsuite/btcutil v1.0.2
+	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f
 	github.com/golang/mock v1.6.0
 	github.com/smartystreets/goconvey v1.7.2
 	go.uber.org/fx v1.17.1
