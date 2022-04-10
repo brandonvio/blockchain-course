@@ -33,17 +33,17 @@ func (bcs *BlockchainServer) Port() uint16 {
 	return bcs.port
 }
 
-func HelloWorld(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "Hello, World!")
-}
-
 func (bcs *BlockchainServer) GetChain(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
-		w.Header().Add("Contect-Type", "application/json")
+		w.Header().Add("Content-Type", "application/json")
 		bc := bcs.GetBlockchain()
 		m, _ := bc.MarshalJSON()
-		io.WriteString(w, string(m[:]))
+		_, err := io.WriteString(w, string(m[:]))
+		if err != nil {
+			log.Fatalln(err)
+			return
+		}
 	default:
 		log.Printf("ERROR: Invalid HTTP Method")
 	}
@@ -52,6 +52,7 @@ func (bcs *BlockchainServer) GetChain(w http.ResponseWriter, req *http.Request) 
 func (bcs *BlockchainServer) Run(port uint16) {
 	bcs.port = port
 	bcs.blockchain.SetPort(port)
+	log.Printf("Starting blockchain server with port %v", port)
 	http.HandleFunc("/", bcs.GetChain)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(bcs.Port())), nil))
 }

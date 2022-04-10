@@ -12,10 +12,10 @@ const BlockTimestamp int64 = 1648402331651366000
 
 func TestBlock_Hash(t *testing.T) {
 	// setup
-	globals := &globals.GlobalLib{}
+	gl := &globals.GlobalLib{}
 
 	// create blocks
-	timestamp, previousHash := BlockTimestamp, globals.EmptyByte32()
+	timestamp, previousHash := BlockTimestamp, gl.EmptyByte32()
 	nonce := 7049895176162811509
 	transactions := []*Transaction{
 		{

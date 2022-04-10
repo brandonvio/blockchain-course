@@ -3,8 +3,50 @@
     <head>
         <meta charset="UTF-8">
         <title>the blockchain</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://bootswatch.com/5/darkly/bootstrap.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     </head>
     <body>
-        welcome to the blockchain!
+        <div class="container">
+            <h1>Rythm Blockchain</h1>
+            <br>
+            <div>
+                <h2>Wallet</h2>
+                <p>
+                    <div id="wallet_amount">0</div>
+                    <button id="reload_wallet">Reload Wallet</button>
+                </p>
+
+                <p>
+                    <label>Public Key</label><br>
+                    <textarea id="public_key" rows="3" cols="50"></textarea>
+                </p>
+
+                <p>
+                    <label>Private Key</label><br>
+                    <textarea id="private_key" rows="1" cols="50"></textarea>
+                </p>
+
+                <p>
+                    <label>Blockchain Address</label><br>
+                    <textarea id="blockchain_address" rows="1" cols="50"></textarea>
+                </p>
+            </div>
+            <div>
+                <h2>Send Money</h2>
+                <div>
+                    <p>
+                        <label>Address:</label><br>
+                        <input id="recipient_blockchain_address" size="50" type="text">
+                    </p>
+
+                    <p>
+                        <label>Amount:</label><br>
+                        <input id="send_amount" type="text"><button id="send_money_button">Send</button>
+                    </p>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

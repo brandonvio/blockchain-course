@@ -24,7 +24,7 @@ func StartServer(bcs *BlockchainServer) {
 }
 
 func main() {
-	fxapp := fx.New(
+	app := fx.New(
 		fx.Provide(globals.NewGlobals),
 		fx.Provide(block.NewBlockchain),
 		fx.Provide(NewBlockchainServer),
@@ -32,7 +32,7 @@ func main() {
 	)
 	startCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	if err := fxapp.Start(startCtx); err != nil {
+	if err := app.Start(startCtx); err != nil {
 		log.Fatal(err)
 	}
 }
