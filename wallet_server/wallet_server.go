@@ -1,8 +1,12 @@
 package main
 
 import (
+	"blockchain/block"
 	"blockchain/globals"
 	"blockchain/wallet"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,14 +21,6 @@ type WalletServer struct {
 	port    uint
 	gateway string
 	lib     globals.IGlobalLib
-}
-
-type Transaction struct {
-	SenderPrivateKey                 string `json:"sender_private_key"`
-	SenderBlockchainAddress          string `json:"sender_blockchain_address"`
-	SenderRecipientBlockchainAddress string `json:"sender_recipient_blockchain_address"`
-	SenderPublicKey                  string `json:"sender_public_key"`
-	SenderSendAmount                 string `json:"sender_send_amount"`
 }
 
 func NewWalletServer(port uint, gateway string, lib globals.IGlobalLib) *WalletServer {
@@ -76,22 +72,63 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 	switch req.Method {
 	case http.MethodPost:
 		// handle request
-		var tx Transaction
+		var tx TransactionRequest
 		err := ws.lib.DecodeJSONBody(w, req, &tx)
-		if err != nil {
-			log.Println(err)
+		if !ws.lib.IsHttpOk(err, w) {
+			return
+		}
+		if !tx.Validate() {
+			log.Println("ERROR: invalid payload")
+			_, err = io.WriteString(w, string(ws.lib.JsonStatus("failed: invalid payload")))
 			return
 		}
 
-		log.Println("tx.SenderPrivateKey:", tx.SenderPrivateKey)
-
-		// send response
-		w.Header().Add("Content-Type", "application/json")
-		_, err = io.WriteString(w, string(ws.lib.JsonStatus("success")))
+		publicKey := ws.lib.PublicKeyFromString(*tx.SenderPublicKey)
+		privateKey := ws.lib.PrivateKeyFromString(*tx.SenderPrivateKey, publicKey)
+		value, err := strconv.ParseFloat(*tx.SenderSendAmount, 32)
 		if err != nil {
-			log.Println(err)
+			log.Println("ERROR: parse amount failed")
 		}
-		log.Println("create transaction success")
+		value32 := float32(value)
+
+		fmt.Println("publicKey:", publicKey)
+		fmt.Println("privateKey:", privateKey)
+		fmt.Println("value32:", value32)
+
+		transaction := wallet.NewTransaction(
+			privateKey,
+			publicKey,
+			*tx.SenderBlockchainAddress,
+			*tx.RecipientBlockchainAddress,
+			value32,
+		)
+		signature := transaction.GenerateSignature()
+		signatureStr := signature.String()
+
+		btr := &block.TransactionRequest{
+			SenderBlockchainAddress:    tx.SenderBlockchainAddress,
+			RecipientBlockchainAddress: tx.RecipientBlockchainAddress,
+			SenderPublicKey:            tx.SenderPublicKey,
+			Value:                      &value32,
+			Signature:                  &signatureStr,
+		}
+
+		m, _ := json.Marshal(btr)
+		buf := bytes.NewBuffer(m)
+		blockchainEndpoint := ws.Gateway() + "/transactions"
+		log.Println("INFO: Calling blockchain endpoint:", blockchainEndpoint)
+		resp, _ := http.Post(blockchainEndpoint, "application/json", buf)
+
+		if resp.StatusCode == 201 {
+			w.Header().Add("Content-Type", "application/json")
+			io.WriteString(w, string(ws.lib.JsonStatus("success")))
+			log.Println("create transaction success")
+			return
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			io.WriteString(w, string(ws.lib.JsonStatus(fmt.Sprintf("failed: %v", resp.StatusCode))))
+			log.Println("ERROR: create transaction failed:", resp.StatusCode)
+		}
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println("ERROR: Invalid HTTP Method")

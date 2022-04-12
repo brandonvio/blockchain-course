@@ -3,7 +3,6 @@ package block
 import (
 	types "blockchain/blockchaintypes"
 	"blockchain/globals"
-	"blockchain/utils"
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/json"
@@ -14,9 +13,9 @@ import (
 )
 
 const (
-	MINING_DIFFICULTY = 3
-	MINING_SENDER     = "THE BLOCKCHAIN"
-	MINING_REWARD     = 1.0
+	MiningDifficulty = 3
+	MiningSender     = "THE BLOCKCHAIN"
+	MiningReward     = 1.0
 )
 
 type Blockchain struct {
@@ -34,6 +33,10 @@ func NewBlockchain(globals globals.IGlobalLib) *Blockchain {
 	b0 := NewBlock(0, globals.EmptyByte32(), globals.NowUnixNano(), []*Transaction{})
 	bc.chain = append(bc.chain, b0)
 	return bc
+}
+
+func (bc *Blockchain) TransactionPool() []*Transaction {
+	return bc.transactionPool
 }
 
 func (bc *Blockchain) MarshalJSON() ([]byte, error) {
@@ -78,7 +81,7 @@ func (bc *Blockchain) LastBlock() *Block {
 
 func (bc *Blockchain) VerifyTransactionSignature(
 	senderPublicKey *ecdsa.PublicKey,
-	s *utils.Signature,
+	s *globals.Signature,
 	t *Transaction,
 ) bool {
 	m, _ := json.Marshal(t)
@@ -86,16 +89,33 @@ func (bc *Blockchain) VerifyTransactionSignature(
 	return ecdsa.Verify(senderPublicKey, h[:], s.R, s.S)
 }
 
+func (bc *Blockchain) CreateTransaction(
+	sender string,
+	recipient string,
+	value float32,
+	senderPublicKey *ecdsa.PublicKey,
+	s *globals.Signature) bool {
+
+	isTransacted := bc.AddTransaction(
+		sender,
+		recipient,
+		value,
+		senderPublicKey,
+		s)
+
+	return isTransacted
+}
+
 func (bc *Blockchain) AddTransaction(
 	sender string,
 	recipient string,
 	value float32,
 	senderPublicKey *ecdsa.PublicKey,
-	s *utils.Signature) bool {
+	s *globals.Signature) bool {
 
 	t := NewTransaction(sender, recipient, value)
 
-	if sender == MINING_SENDER {
+	if sender == MiningSender {
 		bc.transactionPool = append(bc.transactionPool, t)
 		return true
 	}
@@ -148,7 +168,7 @@ func (bc *Blockchain) ProofOfWork() int {
 	transactions := bc.CopyTransactionPool()
 	previousHash := bc.LastBlock().Hash()
 	nonce := 0
-	for !bc.ValidProof(nonce, previousHash, transactions, MINING_DIFFICULTY) {
+	for !bc.ValidProof(nonce, previousHash, transactions, MiningDifficulty) {
 		nonce += 1
 	}
 	return nonce
@@ -156,7 +176,7 @@ func (bc *Blockchain) ProofOfWork() int {
 
 func (bc *Blockchain) Mining() bool {
 	if len(bc.transactionPool) > 0 {
-		bc.AddTransaction(MINING_SENDER, bc.blockchainAddress, MINING_REWARD, nil, nil)
+		bc.AddTransaction(MiningSender, bc.blockchainAddress, MiningReward, nil, nil)
 		bc.CreateBlock()
 		log.Println("action=mining status=success")
 		return true

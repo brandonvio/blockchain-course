@@ -1,8 +1,7 @@
 package wallet
 
 import (
-	"blockchain/utils"
-
+	"blockchain/globals"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/sha256"
@@ -32,11 +31,11 @@ func NewTransaction(
 	}
 }
 
-func (t *Transaction) GenerateSignature() *utils.Signature {
+func (t *Transaction) GenerateSignature() *globals.Signature {
 	m, _ := json.Marshal(t)
 	h := sha256.Sum256([]byte(m))
 	r, s, _ := ecdsa.Sign(rand.Reader, t.senderPrivateKey, h[:])
-	return &utils.Signature{
+	return &globals.Signature{
 		R: r,
 		S: s,
 	}
