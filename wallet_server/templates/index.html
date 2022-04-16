@@ -48,10 +48,12 @@
                         success: function(response) {
                             console.log("response:", response)
                             console.log("send success")
+                            $("#send_status").html("<span>success</span>")
                         },
                         error: function(response) {
                             console.log("response:", response)
                             console.log("send failure")
+                            $("#send_status").html("<span>failure</span>")
                         }
                     })
                 })
@@ -95,6 +97,9 @@
                     <p>
                         <label>Amount:</label><br>
                         <input id="send_amount" type="text"><button class="btn btn-success" id="send_money_button">Send</button>
+                    </p>
+                    <p>
+                        <div id="send_status"></div>
                     </p>
                 </div>
             </div>

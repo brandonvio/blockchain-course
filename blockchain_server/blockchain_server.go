@@ -113,11 +113,32 @@ func (bcs *BlockchainServer) Transactions(w http.ResponseWriter, req *http.Reque
 	}
 }
 
+func (bcs *BlockchainServer) Mine(w http.ResponseWriter, req *http.Request) {
+	switch req.Method {
+	case http.MethodGet:
+		bc := bcs.GetBlockchain()
+		isMined := bc.Mining()
+
+		var m []byte
+		if !isMined {
+			w.WriteHeader(http.StatusBadRequest)
+			m = gl.JsonStatus("failed")
+		} else {
+			m = gl.JsonStatus("request")
+		}
+		w.Header().Add("Content-Type", "application/json")
+		io.WriteString(w, string(m))
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
 func (bcs *BlockchainServer) Run(port uint16) {
 	bcs.port = port
 	bcs.blockchain.SetPort(port)
 	log.Printf("Starting blockchain server with port %v", port)
 	http.HandleFunc("/", bcs.GetChain)
+	http.HandleFunc("/mine", bcs.Mine)
 	http.HandleFunc("/transactions", bcs.Transactions)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(bcs.Port())), nil))
 }
