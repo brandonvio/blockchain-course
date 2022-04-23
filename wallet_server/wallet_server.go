@@ -79,6 +79,7 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 		}
 		if !tx.Validate() {
 			log.Println("ERROR: invalid payload")
+			w.WriteHeader(http.StatusInternalServerError)
 			_, err = io.WriteString(w, string(ws.lib.JsonStatus("failed: invalid payload")))
 			return
 		}
@@ -117,7 +118,15 @@ func (ws *WalletServer) CreateTransaction(w http.ResponseWriter, req *http.Reque
 		buf := bytes.NewBuffer(m)
 		blockchainEndpoint := ws.Gateway() + "/transactions"
 		log.Println("INFO: Calling blockchain endpoint:", blockchainEndpoint)
-		resp, _ := http.Post(blockchainEndpoint, "application/json", buf)
+		resp, err := http.Post(blockchainEndpoint, "application/json", buf)
+
+		if err != nil {
+			log.Println("ERROR: error calling blockchain", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Add("Content-Type", "application/json")
+			io.WriteString(w, string(ws.lib.JsonStatus("failed")))
+			return
+		}
 
 		if resp.StatusCode == 201 {
 			w.Header().Add("Content-Type", "application/json")
