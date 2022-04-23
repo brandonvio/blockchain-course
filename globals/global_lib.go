@@ -29,6 +29,7 @@ type IGlobalLib interface {
 	PublicKeyFromString(s string) *ecdsa.PublicKey
 	PrivateKeyFromString(s string, publicKey *ecdsa.PublicKey) *ecdsa.PrivateKey
 	SignatureFromString(s string) *Signature
+	GetApplicationJson() (string, string)
 }
 
 func NewGlobals() IGlobalLib {
@@ -101,6 +102,10 @@ func (g *GlobalLib) JsonStatus(message string) []byte {
 		Message: message,
 	})
 	return m
+}
+
+func (g *GlobalLib) GetApplicationJson() (string, string) {
+	return "Content-Type", "application/json"
 }
 
 type malformedRequest struct {

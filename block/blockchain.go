@@ -7,6 +7,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"log"
+	"sync"
+	"time"
 
 	"fmt"
 	"strings"
@@ -16,6 +18,7 @@ const (
 	MiningDifficulty = 3
 	MiningSender     = "THE BLOCKCHAIN"
 	MiningReward     = 1.0
+	MiningTimerSec   = 20
 )
 
 type Blockchain struct {
@@ -24,6 +27,19 @@ type Blockchain struct {
 	chain             []*Block
 	blockchainAddress string
 	port              uint16
+	mux               sync.Mutex
+}
+
+type AmountResponse struct {
+	Amount float32 `json:"amount"`
+}
+
+func (ar *AmountResponse) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Amount float32 `json:"amount"`
+	}{
+		Amount: ar.Amount,
+	})
 }
 
 func NewBlockchain(globals globals.IGlobalLib) *Blockchain {
@@ -175,14 +191,23 @@ func (bc *Blockchain) ProofOfWork() int {
 }
 
 func (bc *Blockchain) Mining() bool {
+	bc.mux.Lock()
+	defer bc.mux.Unlock()
+
 	if len(bc.transactionPool) > 0 {
 		bc.AddTransaction(MiningSender, bc.blockchainAddress, MiningReward, nil, nil)
 		bc.CreateBlock()
 		log.Println("action=mining status=success")
 		return true
 	} else {
+		log.Println("action=mining status=zero transactions to mine")
 		return false
 	}
+}
+
+func (bc *Blockchain) StartMining() {
+	bc.Mining()
+	_ = time.AfterFunc(time.Second*MiningTimerSec, bc.StartMining)
 }
 
 func (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32 {
