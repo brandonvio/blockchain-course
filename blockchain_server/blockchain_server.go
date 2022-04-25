@@ -167,6 +167,7 @@ func (bcs *BlockchainServer) Amount(w http.ResponseWriter, req *http.Request) {
 func (bcs *BlockchainServer) Run(port uint16) {
 	bcs.port = port
 	bcs.blockchain.SetPort(port)
+	bcs.blockchain.Run()
 	log.Printf("Starting blockchain server with port %v", port)
 	http.HandleFunc("/", bcs.GetChain)
 	http.HandleFunc("/mine", bcs.Mine)
